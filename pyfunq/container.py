@@ -25,11 +25,7 @@ class Container(AbstractContextManager):
         self._disposables: list[ReferenceType[Any]] = []
         self._services: dict[ServiceKey, ServiceEntry] = dict()
 
-    def register(
-        self,
-        service_type: Type | list[type],
-        factory: Callable[[Container, tuple[Any, ...]], TService]
-    ) -> Registration:
+    def register(self, service_type: Type | list[type], factory: Callable) -> Registration:
         ctor, *params = service_type if isinstance(service_type, list) else [service_type]
         registration = Registration(
             factory=factory,
@@ -51,7 +47,7 @@ class Container(AbstractContextManager):
                 container=self,
                 owner=registration._owner,
                 factory=registration._factory,
-                reuse_scope=registration._reuse_scope
+                reuse_scope=registration._reuse_scope,
             )
 
     def create_child_container(self) -> Container:
@@ -137,7 +133,7 @@ class Container(AbstractContextManager):
             container=self,
             owner=service_entry._owner,
             factory=service_entry._factory,
-            reuse_scope=service_entry._reuse_scope
+            reuse_scope=service_entry._reuse_scope,
         )
 
     def _try_resolve_internal(self, ctor: Type[TService], *args, name: str | None = None):

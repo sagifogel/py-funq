@@ -4,9 +4,10 @@ from typing import Callable, Type
 
 from pyfunq.owner import Owner
 from pyfunq.reuse_scope import ReuseScope
+from pyfunq.syntax import OwnedSyntax, RegistrationSyntax, ReusedOwnedSyntax
 
 
-class Registration:
+class Registration(RegistrationSyntax):
     def __init__(self, service_type: Type, factory_type: tuple, factory: Callable):
         self._factory = factory
         self._name: str | None = None
@@ -15,14 +16,13 @@ class Registration:
         self._owner: Owner = Owner.Container
         self._reuse_scope: ReuseScope = ReuseScope.NoReuse
 
-    def named(self, name: str) -> Registration:
+    def named(self, name: str) -> ReusedOwnedSyntax:
         self._name = name
         return self
 
-    def reused_within(self, reuse_scope: ReuseScope) -> Registration:
+    def reused_within(self, reuse_scope: ReuseScope) -> OwnedSyntax:
         self._reuse_scope = reuse_scope
         return self
 
-    def owned_by(self, owner: Owner) -> Registration:
+    def owned_by(self, owner: Owner) -> None:
         self._owner = owner
-        return self

@@ -7,8 +7,8 @@ from pyfunq.reuse_scope import ReuseScope
 class ServiceEntry:
     def __init__(
         self,
-        factory: Callable,
         container: Any,
+        factory: Callable,
         reuse_scope: ReuseScope,
         instance: Any | None = None,
         owner: Owner = Owner.External
