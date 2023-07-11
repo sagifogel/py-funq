@@ -3,7 +3,7 @@ from __future__ import annotations
 import weakref
 from contextlib import AbstractContextManager
 from types import TracebackType
-from typing import Any, Callable, Type, TypeVar
+from typing import Any, Callable, Optional, Type, TypeVar
 
 from _weakref import ReferenceType
 
@@ -25,11 +25,14 @@ class Container(AbstractContextManager):
         self._disposables: list[ReferenceType[Any]] = []
         self._services: dict[ServiceKey, ServiceEntry] = dict()
 
-    def register(self, service_type: Type | list[type], factory: Callable) -> Registration:
+    def register(self, service_type: Type | list[type], factory: Optional[Callable] = None) -> Registration:
         ctor, *params = service_type if isinstance(service_type, list) else [service_type]
+        if factory is None and len(params) > 0:
+            raise ValueError('self registration is only available with 0 params')
+        concrete_factory = factory if factory is not None else self.__closure__(ctor)
         registration = Registration(
-            factory=factory,
             service_type=ctor,
+            factory=concrete_factory,
             factory_type=tuple(params),
         )
         self._registrations.append(registration)
@@ -82,6 +85,10 @@ class Container(AbstractContextManager):
                 disposable.__exit__(None, None, None)
 
         return None
+
+    @staticmethod
+    def __closure__(ctor: Type) -> Callable:
+        return lambda _: ctor()
 
     def _resolve_internal(self, ctor: Type[TService], *args, name: str | None = None) -> TService:
         arg_types = (type(arg) for arg in args)

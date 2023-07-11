@@ -1,6 +1,6 @@
 import gc
 import weakref
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import cast
 
 from pyfunq.container import Container
@@ -18,6 +18,26 @@ class TestContainer:
 
         assert bar is not None
         assert isinstance(bar, Bar)
+
+    def test_container_supports_self_registration(self):
+        container = Container()
+        container.register(Bar)
+        container.configure()
+        bar = container.resolve(Bar)
+
+        assert bar is not None
+        assert isinstance(bar, Bar)
+
+    def test_container_does_not_supports_self_registration_abstract_classes(self):
+        container = Container()
+        container.register(IBar)
+        container.configure()
+
+        try:
+            container.resolve(IBar)
+            raise AssertionError()
+        except TypeError:
+            assert True
 
     def test_resolve_dependencies_injected(self):
         container = Container()
@@ -101,6 +121,19 @@ class TestContainer:
         container.configure()
         bar1 = container.resolve(IBar)
         bar2 = container.resolve(IBar)
+        assert bar1 is bar2
+
+    def test_container_should_reuse_self_register_instances_within_scope(self):
+        container = Container()
+        container.register(Bar) \
+            .reused_within(ReuseScope.Container)
+        container.configure()
+        bar1 = container.resolve(Bar)
+        bar2 = container.resolve(Bar)
+
+        assert bar1 is not None
+        assert bar2 is not None
+        assert isinstance(bar1, Bar)
         assert bar1 is bar2
 
     def test_child_container_should_resolve_registration_made_at_its_parent_container(self):
@@ -228,7 +261,9 @@ class IFoo(ABC):
 
 
 class IBar(ABC):
-    pass
+    @abstractmethod
+    def abc(self):
+        pass
 
 
 class FooContextManager(IFoo):
@@ -247,6 +282,9 @@ class FooContextManager(IFoo):
 
 
 class Bar(IBar):
+    def abc(self):
+        pass
+
     def __init__(self, arg1: str | None = None, arg2: bool | None = None):
         self._arg1 = arg1
         self._arg2 = arg2
