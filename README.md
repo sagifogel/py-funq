@@ -43,6 +43,14 @@ container.configure()
 resolved = container.resolve(Developer)
 ```
 
+### Use auto registrations using non abstract types
+
+types that don't have dependencies can be auto registered
+```python
+container.register(PythonDeveloper)
+container.configure()
+container.resolve(PythonDeveloper)
+
 ### Register and resolve a complex dependency
 ```python
 container.register(Person, (
@@ -58,6 +66,7 @@ person = container.resolve(Person)
 
 container.register(Developer, lambda c: PythonDeveloper()) \
          .named('foo')
+container.configure()
 developer = container.resolve_named(Developer, 'foo')
 developer is not container.resolve(Developer)  # True
 ```
@@ -67,6 +76,7 @@ The container will throw an exception if it will not be able to resolve a depend
 You can use the ```try_resolve``` or ```try_resolve_named``` functions in order to avoid an exception:
 ```python
 container = Container()
+container.configure()
 developer = container.try_resolve(Developer)
 if developer is not None:
 ...
@@ -101,6 +111,7 @@ container.register([ThreeArgumentsClass, str, int, bool], lambda c, arg1, arg2, 
 
 And resolve the dependencies using the appropriate arguments
 ```python
+container.configure()
 container.resolve(OneArgumentClass, 'value')
 container.resolve(TwoArgumentsClass, 'value', 10)
 container.resolve(ThreeArgumentsClass, 'value', 10, True)

@@ -19,7 +19,7 @@ class TestContainer:
         assert bar is not None
         assert isinstance(bar, Bar)
 
-    def test_container_supports_self_registration(self):
+    def test_container_supports_auto_registration(self):
         container = Container()
         container.register(Bar)
         container.configure()
