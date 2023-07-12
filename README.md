@@ -50,6 +50,7 @@ types that don't have dependencies can be auto registered
 container.register(PythonDeveloper)
 container.configure()
 container.resolve(PythonDeveloper)
+```
 
 ### Register and resolve a complex dependency
 ```python
