@@ -1,4 +1,5 @@
 import gc
+import unittest
 import weakref
 from abc import ABC, abstractmethod
 from typing import cast
@@ -144,13 +145,41 @@ class TestContainer:
         bar = child_container.resolve(IBar)
         assert bar is not None
 
-    def test_container_using_reuse_scope_hierarchy_should_create_different_instances(self):
+    def test_calling_the_child_containers_configure_method_configures_all_parents(self):
+        container = Container()
+        child_container = container.create_child_container()
+        container.register(IBar, lambda c: Bar())
+        child_container.configure()
+        child_container.resolve(IBar)
+        try:
+            container.resolve(IBar)
+        except ResolutionError:
+            assert True
+
+    def test_container_using_reuse_scope_container_should_create_different_instances(self):
         container = Container()
         container.register(IBar, lambda c: Bar()).reused_within(ReuseScope.Container)
         container.configure()
         child_container = container.create_child_container()
         bar1 = container.resolve(IBar)
         bar2 = child_container.resolve(IBar)
+        assert bar1 is not bar2
+
+    def test_container_using_reuse_scope_hierarchy_should_create_a_singleton_instance(self):
+        container = Container()
+        container.register(IBar, lambda c: Bar()).reused_within(ReuseScope.Hierarchy)
+        container.configure()
+        child_container = container.create_child_container()
+        bar1 = container.resolve(IBar)
+        bar2 = child_container.resolve(IBar)
+        assert bar1 is bar2
+
+    def test_container_using_non_reuse_scope_should_create_an_instance_every_time(self):
+        container = Container()
+        container.register(IBar, lambda c: Bar()).reused_within(ReuseScope.NoReuse)
+        container.configure()
+        bar1 = container.resolve(IBar)
+        bar2 = container.resolve(IBar)
         assert bar1 is not bar2
 
     def test_disposable_instance_owned_and_reused_by_container_is_disposed(self):

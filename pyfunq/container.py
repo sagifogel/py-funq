@@ -39,6 +39,12 @@ class Container(AbstractContextManager):
         return registration
 
     def configure(self) -> None:
+        self._configure()
+        parent_container = self._parent_container
+        if parent_container is not None:
+            parent_container.configure()
+
+    def _configure(self):
         while len(self._registrations) > 0:
             registration = self._registrations.pop()
             service_key = ServiceKey(

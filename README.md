@@ -67,9 +67,11 @@ person = container.resolve(Person)
 
 container.register(Developer, lambda c: PythonDeveloper()) \
          .named('foo')
+container.register(Developer, lambda c: PythonDeveloper())
 container.configure()
-developer = container.resolve_named(Developer, 'foo')
-developer is not container.resolve(Developer)  # True
+developer = container.resolve(Developer)
+named_developer = container.resolve_named(Developer, 'foo')
+developer is not named_developer  # True
 ```
 
 ### Try to resolve a dependency
@@ -85,8 +87,9 @@ if developer is not None:
 namedDeveloper = container.try_resolve_named(Developer, 'foo')
 if namedDeveloper is not None:
 ...
+
 ```
-### Register and resolve a named dependency with arguments
+### Register and resolve a dependency with arguments
 You can register a dependency that accepts any number of arguments
 ```python
 class OneArgumentClass:
@@ -116,6 +119,49 @@ container.configure()
 container.resolve(OneArgumentClass, 'value')
 container.resolve(TwoArgumentsClass, 'value', 10)
 container.resolve(ThreeArgumentsClass, 'value', 10, True)
+```
+
+### Creating child containers
+By default all child containers can resolve dependencies within themselves and their parent.
+
+```python
+container = Container()
+child_container = container.create_child_container()
+container.register(Developer, lambda c: PythonDeveloper())
+child_container.configure()
+child_container.resolve(Developer)
+try:
+    container.resolve(Developer)
+except ResolutionError:
+    assert True
+```
+
+### Controlling the lifetime of an instance
+The lifetime of an instance can be a singleton or per call (transient)
+You can control the lifetime using the ```ReuseScope``` enum.<br/> 
+
+```python
+from enum import Enum
+
+class ReuseScope(Enum):
+    NoReuse = 'NoReuse'
+    Container = 'Container'
+    Hierarchy = 'Hierarchy'
+
+```
+By default all registrations are marked using  the ```ReuseScope.container``` scope.
+
+```python
+from pyfunq.reuse_scope import ReuseScope
+
+# transient
+container.register(Developer, lambda c: PythonDeveloper()).reused_within(ReuseScope.NoReuse) 
+
+# singleton 
+container.register(Developer, lambda c: PythonDeveloper()).reused_within(ReuseScope.Hierarchy) 
+
+# singleton per container
+container.register(Developer, lambda c: PythonDeveloper()).reused_within(ReuseScope.Container) 
 ```
 
 ### License
