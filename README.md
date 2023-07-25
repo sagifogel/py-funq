@@ -1,5 +1,5 @@
 # py-funq
-<a href="https://github.com/jlyonsmith/Funq/" target="_blank">Funq</a> Dependency injection container port for python
+<a href="https://github.com/jlyonsmith/Funq/" target="_blank">Funq</a> dependency injection container port for python
 
 ### Installation
 
