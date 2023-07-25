@@ -179,8 +179,8 @@ class Owner(Enum):
     Container = 'Container'
 
 ```
-Only context manager instances can be managed within the container.
-By default, all registrations are marked using  the ```Owner.Container``` scope.
+Only context manager instances can be managed within the container. <br/>
+By default, all registrations are marked using  the ```Owner.External``` scope.
 
 ```python
 from pyfunq.owner import Owner
@@ -202,11 +202,31 @@ class Disposable:
 
 container = Container()
 
-# The container is responsible for disposing the instance
-container.register(PythonDeveloper).owned_by(Owner.Container)
-
 # The container is not responsible for disposing the instance 
-container.register(PythonDeveloper).owned_by(Owner.External)
+# container.register(PythonDeveloper).owned_by(Owner.External)
+# or
+# container.register(PythonDeveloper)
+
+
+# The container is responsible for disposing the instance
+container.register(Disposable).owned_by(Owner.Container)
+container.configure()
+disposable = container.resolve(Disposable)
+container.dispose()
+assert disposable._is_disposed
+```
+
+#### or
+
+```python
+disposable: Disposable
+
+with Container() as container:
+    container.register(Disposable).owned_by(Owner.Container)
+    container.configure()
+    disposable = container.resolve(Disposable)
+
+assert disposable._is_disposed
 ```
 
 ### Changing the default ReuseScope/Owner
