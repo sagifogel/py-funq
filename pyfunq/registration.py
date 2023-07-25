@@ -10,10 +10,10 @@ from pyfunq.syntax import OwnedSyntax, RegistrationSyntax, ReusedOwnedSyntax
 class Registration(RegistrationSyntax):
     def __init__(
         self,
+        owner: Owner,
+        factory: Callable,
         service_type: Type,
         factory_type: tuple,
-        factory: Callable,
-        owner: Owner,
         reuse_scope: ReuseScope,
     ):
         self._owner = owner

@@ -11,7 +11,7 @@ class ServiceEntry:
         factory: Callable,
         reuse_scope: ReuseScope,
         instance: Any | None = None,
-        owner: Owner = Owner.External
+        owner: Owner = Owner.External,
     ):
         self._owner = owner
         self._factory = factory

@@ -28,8 +28,8 @@ class ServiceKey:
 
         other_service_key = cast(ServiceKey, other)
         return (
-            self._name == other_service_key.name and
-            self.service_type == other_service_key._service_type and
+            self.name == other_service_key.name and
+            self.service_type == other_service_key.service_type and
             self.factory_type == other_service_key.factory_type
         )
 
