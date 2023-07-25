@@ -137,7 +137,7 @@ except ResolutionError:
 ```
 
 ### Controlling the lifetime of an instance
-The lifetime of an instance can be a singleton or per call (transient)
+The lifetime of an instance can be a singleton or per call (transient) </ br>
 You can control the lifetime using the ```ReuseScope``` enum.<br/> 
 
 ```python
@@ -155,13 +155,67 @@ By default all registrations are marked using  the ```ReuseScope.container``` sc
 from pyfunq.reuse_scope import ReuseScope
 
 # transient
-container.register(Developer, lambda c: PythonDeveloper()).reused_within(ReuseScope.NoReuse) 
+container.register(Developer, lambda c: PythonDeveloper()) \
+         .reused_within(ReuseScope.NoReuse) 
 
 # singleton 
-container.register(Developer, lambda c: PythonDeveloper()).reused_within(ReuseScope.Hierarchy) 
+container.register(Developer, lambda c: PythonDeveloper()) \
+         .reused_within(ReuseScope.Hierarchy) 
 
 # singleton per container
-container.register(Developer, lambda c: PythonDeveloper()).reused_within(ReuseScope.Container) 
+container.register(Developer, lambda c: PythonDeveloper()) \
+         .reused_within(ReuseScope.Container) 
+```
+
+### Disposing registered instances
+You can let the container handle disposal of instances using the ```Owner``` enum.<br/>
+
+```python
+from enum import Enum
+
+
+class Owner(Enum):
+    External = 'External'
+    Container = 'Container'
+
+```
+Only context manager instances can be managed within the container.
+By default, all registrations are marked using  the ```Owner.Container``` scope.
+
+```python
+from pyfunq.owner import Owner
+
+class Disposable:
+    def __init__(self):
+        self._is_disposed = False
+
+    @property
+    def is_disposed(self) -> bool:
+        return self._is_disposed
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, ex_type, value, traceback):
+        self._is_disposed = True
+
+
+container = Container()
+
+# The container is responsible for disposing the instance
+container.register(PythonDeveloper).owned_by(Owner.Container)
+
+# The container is not responsible for disposing the instance 
+container.register(PythonDeveloper).owned_by(Owner.External)
+```
+
+### Changing the default ReuseScope/Owner
+
+```python
+container = Container()
+
+container.default_owner = Owner.External
+container.default_reuse = ReuseScope.NoReuse
 ```
 
 ### License

@@ -1,5 +1,4 @@
 import gc
-import unittest
 import weakref
 from abc import ABC, abstractmethod
 from typing import cast
@@ -118,7 +117,8 @@ class TestContainer:
 
     def test_container_should_reuse_instances_within_scope(self):
         container = Container()
-        container.register(IBar, lambda c: Bar()).reused_within(ReuseScope.Container)
+        container.register(IBar, lambda c: Bar()) \
+                 .reused_within(ReuseScope.Container)
         container.configure()
         bar1 = container.resolve(IBar)
         bar2 = container.resolve(IBar)
@@ -176,7 +176,8 @@ class TestContainer:
 
     def test_container_using_non_reuse_scope_should_create_an_instance_every_time(self):
         container = Container()
-        container.register(IBar, lambda c: Bar()).reused_within(ReuseScope.NoReuse)
+        container.register(IBar, lambda c: Bar()) \
+                 .reused_within(ReuseScope.NoReuse)
         container.configure()
         bar1 = container.resolve(IBar)
         bar2 = container.resolve(IBar)
@@ -283,6 +284,26 @@ class TestContainer:
                 foo = cast(FooContextManager, child_container.resolve(IFoo))
 
             assert not foo._is_disposed
+
+    def test_container_reuse_can_be_changed_globally(self):
+        container = Container()
+        container.default_reuse = ReuseScope.Container
+        container.register(IBar, lambda c: Bar())
+        container.configure()
+        bar1 = container.resolve(IBar)
+        bar2 = container.resolve(IBar)
+        assert bar1 is bar2
+
+    def test_container_ownership_can_be_changed_globally(self):
+        foo: FooContextManager
+
+        with Container() as container:
+            container.default_owner = Owner.Container
+            container.register(IFoo, lambda c: FooContextManager())
+            container.configure()
+            foo = cast(FooContextManager, container.resolve(IFoo))
+
+        assert foo.is_disposed
 
 
 class IFoo(ABC):

@@ -20,6 +20,8 @@ TService = TypeVar('TService')
 class Container(AbstractContextManager):
 
     def __init__(self) -> None:
+        self.default_owner = Owner.External
+        self.default_reuse = ReuseScope.NoReuse
         self._registrations: list[Registration] = []
         self._parent_container: Container | None = None
         self._disposables: list[ReferenceType[Any]] = []
@@ -33,7 +35,9 @@ class Container(AbstractContextManager):
         registration = Registration(
             service_type=ctor,
             factory=concrete_factory,
+            owner=self.default_owner,
             factory_type=tuple(params),
+            reuse_scope=self.default_reuse
         )
         self._registrations.append(registration)
         return registration
