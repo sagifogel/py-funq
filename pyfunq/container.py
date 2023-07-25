@@ -108,6 +108,12 @@ class Container(AbstractContextManager):
             raise ResolutionError('could not resolve instance', service_type=ctor)
         return self._get_or_create(service_key, service_entry, *args)
 
+    def _try_resolve_internal(self, ctor: Type[TService], *args, name: str | None = None):
+        try:
+            return self._resolve_internal(ctor, *args, name=name)
+        except ResolutionError:
+            return None
+
     def _get_service_entry(self, service_key: ServiceKey) -> ServiceEntry | None:
         service_entry = self._get_hierarchy_service_entry(service_key)
         if service_entry is not None:
@@ -152,9 +158,3 @@ class Container(AbstractContextManager):
             factory=service_entry._factory,
             reuse_scope=service_entry._reuse_scope,
         )
-
-    def _try_resolve_internal(self, ctor: Type[TService], *args, name: str | None = None):
-        try:
-            return self._resolve_internal(ctor, *args, name=name)
-        except ResolutionError:
-            return None
