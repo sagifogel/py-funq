@@ -137,7 +137,7 @@ except ResolutionError:
 ```
 
 ### Controlling the lifetime of an instance
-The lifetime of an instance can be a singleton or per call (transient) </ br>
+The lifetime of an instance can be a singleton or per call (transient) <br/>
 You can control the lifetime using the ```ReuseScope``` enum.<br/> 
 
 ```python
